@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -26,6 +27,7 @@ import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
 
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 
@@ -42,7 +44,7 @@ public class WeatherController extends AppCompatActivity {
     final float MIN_DISTANCE = 1000;
 
     // TODO: Set LOCATION_PROVIDER here:
-    String LOCATION_PROVIDER = LocationManager.GPS_PROVIDER;
+    String LOCATION_PROVIDER = LocationManager.NETWORK_PROVIDER;
 
 
     // Member Variables:
@@ -64,6 +66,7 @@ public class WeatherController extends AppCompatActivity {
         mWeatherImage = (ImageView) findViewById(R.id.weatherSymbolIV);
         mTemperatureLabel = (TextView) findViewById(R.id.tempTV);
         ImageButton changeCityButton = (ImageButton) findViewById(R.id.changeCityButton);
+        ImageButton homeButton = (ImageButton) findViewById(R.id.homeButton);
 
 
         // TODO: Add an OnClickListener to the changeCityButton here:
@@ -71,6 +74,13 @@ public class WeatherController extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent myIntent = new Intent(WeatherController.this, ChangeCityController.class);
+                startActivity(myIntent);
+            }
+        });
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent myIntent = new Intent(WeatherController.this, WeatherController.class);
                 startActivity(myIntent);
             }
         });
@@ -87,9 +97,9 @@ public class WeatherController extends AppCompatActivity {
         Intent myIntent = getIntent();
         String city = myIntent.getStringExtra("City");
 
-        if(city !=null){
+        if (city != null) {
             getWeatherForNewCity(city);
-        }else {
+        } else {
             Log.d("Clima", "Getting weather for current location");
             getWeatherForCurrentLocation();
         }
@@ -97,16 +107,23 @@ public class WeatherController extends AppCompatActivity {
 
 
     // TODO: Add getWeatherForNewCity(String city) here:
-    private void getWeatherForNewCity(String city){
+    private void getWeatherForNewCity(String city) {
         RequestParams params = new RequestParams();
         params.put("q", city);
         params.put("appid", APP_ID);
+        Log.d("Clima", "City is: " + city);
         letsDoSomeNetworking(params);
     }
 
     // TODO: Add getWeatherForCurrentLocation() here:
     private void getWeatherForCurrentLocation() {
+        Log.d("Clima", "getWeatherForCurrentLocation() called ");
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        Log.d("Clima", "getWeatherForCurrentLocation() called ");
+
+        // TODO: Test
+        //String longitude = "123.43";
+        //String latitude = "41.805";
 
         mLocationListener = new LocationListener() {
             @Override
@@ -116,13 +133,12 @@ public class WeatherController extends AppCompatActivity {
                 String longitude = String.valueOf(location.getLongitude());
                 String latitude = String.valueOf(location.getLatitude());
 
-                Log.d("Clima", "longitude is: "+longitude);
-                Log.d("Clima", "latitude is: "+latitude);
-
                 RequestParams params = new RequestParams();
                 params.put("lat", latitude);
                 params.put("lon", longitude);
                 params.put("appid", APP_ID);
+                Log.d("Clima", "longitude is: " + longitude);
+                Log.d("Clima", "latitude is: " + latitude);
                 letsDoSomeNetworking(params);
             }
 
@@ -142,7 +158,7 @@ public class WeatherController extends AppCompatActivity {
             }
         };
 
-        if (ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -150,11 +166,14 @@ public class WeatherController extends AppCompatActivity {
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_CODE);
 
             return;
         }
         mLocationManager.requestLocationUpdates(LOCATION_PROVIDER, MIN_TIME, MIN_DISTANCE, mLocationListener);
+
+
+
 
     }
 
@@ -181,6 +200,7 @@ public class WeatherController extends AppCompatActivity {
                 Log.d("Clima", "Success! JSON: "+response.toString());
 
                 WeatherDataModel weatherData = WeatherDataModel.fromJson(response);
+                Log.d("Clima", "Success! JSON: ");
                 updateUI(weatherData);
             }
 

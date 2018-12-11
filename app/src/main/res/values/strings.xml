@@ -7,5 +7,10 @@
     <string name="back_button_description">Dismiss Change City Screen</string>
     <string name="get_weather">Change City</string>
     <string name="default_query">Enter city name</string>
+    <string name="Home_Button">Home button</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
 
 </resources>
